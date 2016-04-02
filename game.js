@@ -13,11 +13,11 @@ D3UI.prototype.init = function () {
       grid = this.grid;
   grid.selectAll('div').data(this.game.mask)
   .enter().append('rect').attr('x', function (d, i) {
-    return parseInt(i % width) * box + 'px';
+    return parseInt(i % width) * box + 0.5 + 'px';
   }).attr('y', function (d, i) {
-    return parseInt(i / width) * box + 'px';
+    return parseInt(i / width) * box + 0.5 + 'px';
   }).attr('fill', 'yellow')
-  .attr('width', box + 'px').attr('height', box + 'px')
+  .attr('width', box - 1 + 'px').attr('height', box - 1 + 'px')
   .on('click', function (d, i) {
     var x = parseInt(i % width), y = parseInt(i / width);
     game.next(x, y);
