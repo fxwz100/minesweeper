@@ -11,24 +11,30 @@ D3UI.prototype.init = function () {
       box = this.box,
       game = this.game,
       grid = this.grid;
+
   grid.selectAll('div').data(this.game.mask)
   .enter().append('rect').attr('x', function (d, i) {
-    return parseInt(i % width) * box + 'px';
+    return parseInt(i % width) * box + 0.5 + 'px';
   }).attr('y', function (d, i) {
-    return parseInt(i / width) * box + 'px';
+    return parseInt(i / width) * box + 0.5 + 'px';
   }).attr('fill', 'yellow')
-  .attr('width', box + 'px').attr('height', box + 'px')
+  .attr('width', box - 1 + 'px').attr('height', box - 1 + 'px')
   .on('click', function (d, i) {
     var x = parseInt(i % width), y = parseInt(i / width);
     game.next(x, y);
-  });
-  grid.selectAll('div').data(this.game.mask)
+  })
+  .attr('opacity', '0')
+  .transition().duration(750)
+  .delay(function(d, i) { return i * 10; })
+  .attr('opacity', '1');
+
+  grid.selectAll('text').data(this.game.mask)
   .enter().append('text').attr('x', function (d, i) {
     return parseInt(i % width) * box + 10 + 'px';
   }).attr('y', function (d, i) {
     return parseInt(i / width) * box + 15 + 'px';
   })
-  .attr('fill', 'black')
+  .attr('fill', 'yellow')
   .attr('font-size', '10px')
   .attr('text-anchor', 'middle');
 };
@@ -40,6 +46,7 @@ D3UI.prototype.update = function () {
         height = this.game.height,
         box = this.box;
     grid.selectAll('rect').data(this.game.mask)
+    .transition().duration(500)
     .attr('fill', function (d) {
       if (d) {
         return 'white';
@@ -48,6 +55,10 @@ D3UI.prototype.update = function () {
       }
     });
     grid.selectAll('text').data(this.game.mask)
+    .transition().duration(500)
+    .attr('fill', function (d) {
+      return d ? 'black' : 'yellow';
+    })
     .text(function (d, i) {
       if (d) {
         return game.data[i];
@@ -227,11 +238,21 @@ d3.select('#play').on('click', function () {
   var ms = new MineSweeper(10, 10, 10, D3UI);
   ms.lose = function () {
     d3.select('.settings .message').html('你输了！<br/>You lose!');
-    d3.select('.settings').style('display', 'block');
+    d3.select('.settings')
+    .style('opacity', '0').style('display', 'block')
+    .transition().duration(500)
+    .style('opacity', '1');
   };
   ms.win  = function () {
     d3.select('.settings .message').html('你赢了！<br/>You win!');
-    d3.select('.settings').style('display', 'block');
+    d3.select('.settings')
+    .style('opacity', '0').style('display', 'block')
+    .transition().duration(500)
+    .style('opacity', '1');
   };
-  d3.select('.settings').style('display', 'none');
+  d3.select('.settings')
+  .style('opacity', '1')
+  .transition().duration(500)
+  .style('opacity', '0')
+  .style('display', 'none');
 });
