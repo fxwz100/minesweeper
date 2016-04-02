@@ -27,11 +27,14 @@ html, body {
   padding: 0.5em;
 }
 .settings .title {
-  font-size: 16pt;
+  font-size: 1.5em;
   color: #acacac;
 }
 .settings .message {
   padding: 0.5em;
+}
+.settings button {
+	font-size: 1em;
 }
 #game-canvas {
   width: 100%;
