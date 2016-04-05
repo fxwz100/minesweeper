@@ -22,7 +22,7 @@ html, body {
   transform: translate(0, -50%);
   text-align: center;
   width: 100%;
-  background-color: black;
+  background-color: rgba(0, 0, 0, 0.85);
   color: white;
   padding: 0.5em;
 }
