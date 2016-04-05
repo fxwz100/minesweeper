@@ -1,16 +1,35 @@
+function endAll(transition, callback) {
+  // taken from http://stackoverflow.com/questions/14024447/d3-js-transition-end-event
+  var n;
+  if (transition.empty()) {
+    callback();
+  }
+  else {
+    n = transition.size();
+    transition.each("end", function () {
+      n--;
+      if (n === 0) {
+        callback();
+      }
+    });
+  }
+}
+
 function D3UI(game) {
   this.game = game;
   this.box = 20;
   this.grid = d3.select('#game-canvas');
   this.grid.selectAll('rect').remove();
   this.grid.selectAll('text').remove();
+  this.ready = false;
 }
 D3UI.prototype.init = function () {
   var width = this.game.width,
       height = this.game.height,
       box = this.box,
       game = this.game,
-      grid = this.grid;
+      grid = this.grid,
+      self = this;
 
   grid.selectAll('div').data(this.game.mask)
   .enter().append('rect').attr('x', function (d, i) {
@@ -25,7 +44,7 @@ D3UI.prototype.init = function () {
   })
   .attr('opacity', '0')
   .transition().duration(750)
-  .delay(function(d, i) { return i * 10; })
+  .delay(function(d, i) { return 100 + Math.random() * 500; })
   .attr('opacity', '1');
 
   grid.selectAll('text').data(this.game.mask)
@@ -70,12 +89,33 @@ D3UI.prototype.update = function () {
     throw 'not initialized.'
   }
 };
-D3UI.prototype.lose = function () {
-  alert('You lose!');
+D3UI.prototype.lose = function (callback) {
+  this.grid.selectAll('rect').data(this.game.data).filter(function (d) {
+    return d === 0;
+  })
+  .transition().duration(1000).ease('bounce-out')
+  .attr('fill', 'red').call(endAll, function () {
+    if (callback) {
+      callback.call()
+    } else {
+      alert('You lose!');
+    }
+  });
 };
-D3UI.prototype.win = function () {
-  alert('You win!');
+D3UI.prototype.win = function (callback) {
+  this.grid.selectAll('rect').data(this.game.data).filter(function (d) {
+    return d === 0;
+  })
+  .transition().duration(750).ease('bounce-out')
+  .attr('fill', 'red').call(endAll, function () {
+    if (callback) {
+      callback.call(this);
+    } else {
+      alert('You win!');
+    }
+  });
 };
+
 function MineSweeper(width, height, mines, UI) {
   this.data = [];
   this.mask = [];
@@ -83,6 +123,7 @@ function MineSweeper(width, height, mines, UI) {
   this.width = width;
   this.height = height;
   this.ui = new UI(this);
+  this.event = {};
   this.init();
 }
 MineSweeper.prototype.print = function () {
@@ -118,6 +159,9 @@ MineSweeper.prototype.raw = function () {
     content += '\n';
   }
   console.log(content);
+};
+MineSweeper.prototype.on = function (event, fn) {
+  this.event[event] = fn;
 };
 MineSweeper.prototype.init = function (mimes) {
   var width = this.width,
@@ -173,13 +217,13 @@ MineSweeper.prototype.update = function () {
 };
 MineSweeper.prototype.lose = function () {
   if (this.ui) {
-    this.ui.lose();
+    this.ui.lose(this.event['lose']);
   }
   console.log('lose');
 };
 MineSweeper.prototype.win = function () {
   if (this.ui) {
-    this.ui.win();
+    this.ui.win(this.event['win']);
   }
   console.log('win');
 };
@@ -236,20 +280,21 @@ MineSweeper.prototype.next = function (x, y) {
 };
 d3.select('#play').on('click', function () {
   var ms = new MineSweeper(10, 10, 10, D3UI);
-  ms.lose = function () {
+  var oldlose = ms.lose;
+  ms.on('lose', function () {
     d3.select('.settings .message').html('你输了！<br/>You lose!');
     d3.select('.settings')
     .style('opacity', '0').style('display', 'block')
-    .transition().duration(500)
+    .transition().duration(500).delay(1000)
     .style('opacity', '1');
-  };
-  ms.win  = function () {
+  });
+  ms.on('win', function () {
     d3.select('.settings .message').html('你赢了！<br/>You win!');
     d3.select('.settings')
     .style('opacity', '0').style('display', 'block')
-    .transition().duration(500)
+    .transition().duration(500).delay(1000)
     .style('opacity', '1');
-  };
+  });
   d3.select('.settings')
   .style('opacity', '1')
   .transition().duration(500)
