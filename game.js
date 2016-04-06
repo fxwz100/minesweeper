@@ -96,7 +96,7 @@ D3UI.prototype.lose = function (callback) {
   .transition().duration(1000).ease('bounce-out')
   .attr('fill', 'red').call(endAll, function () {
     if (callback) {
-      callback.call()
+      callback()
     } else {
       alert('You lose!');
     }
@@ -106,14 +106,15 @@ D3UI.prototype.win = function (callback) {
   this.grid.selectAll('rect').data(this.game.data).filter(function (d) {
     return d === 0;
   })
-  .transition().duration(750).ease('bounce-out')
+  .transition().duration(1000).ease('bounce-out')
   .attr('fill', 'red').call(endAll, function () {
     if (callback) {
-      callback.call(this);
+      callback()
     } else {
       alert('You win!');
     }
   });
+  console.log('why')
 };
 
 function MineSweeper(width, height, mines, UI) {
@@ -208,11 +209,11 @@ MineSweeper.prototype.init = function (mimes) {
 };
 MineSweeper.prototype.update = function () {
   var data = this.data;
-  if (this.mask.reduce(function (c, d, i) { return c && (d || data[i] === 0); })) {
-    this.win();
-  }
   if (this.ui) {
     this.ui.update();
+  }
+  if (this.mask.reduce(function (c, d, i) { return c && (d || data[i] === 0); })) {
+    this.win();
   }
 };
 MineSweeper.prototype.lose = function () {
@@ -280,7 +281,6 @@ MineSweeper.prototype.next = function (x, y) {
 };
 d3.select('#play').on('click', function () {
   var ms = new MineSweeper(10, 10, 10, D3UI);
-  var oldlose = ms.lose;
   ms.on('lose', function () {
     d3.select('.settings .message').html('你输了！<br/>You lose!');
     d3.select('.settings')
@@ -300,4 +300,5 @@ d3.select('#play').on('click', function () {
   .transition().duration(500)
   .style('opacity', '0')
   .style('display', 'none');
+  window.ms = ms;
 });
